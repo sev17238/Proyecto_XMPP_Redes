@@ -3,7 +3,6 @@
   <a href="https://xmpp.org/"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/XMPP_logo.svg/480px-XMPP_logo.svg.png" alt="xmpp" width="300" height="240" ></a>
 <br>
 <br>
-XMPP
 </h1>
 
 <p align="center">¡Interact with this xmpp client!</p>
@@ -29,5 +28,5 @@ This project features the following tools:
  - https://sleekxmpp.readthedocs.io/en/latest/
 
 
-## Licencia
+## Licence
 No license.
