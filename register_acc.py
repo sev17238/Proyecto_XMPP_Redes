@@ -39,7 +39,7 @@ class RegisterBot(sleekxmpp.ClientXMPP):
           workflows will need to check for data forms, etc.
     """
 
-    def __init__(self, jid, password):
+    def __init__(self, jid, password,recipient, message):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
 
         # The session_start event will be triggered when
@@ -57,6 +57,18 @@ class RegisterBot(sleekxmpp.ClientXMPP):
         # and respond accordingly. SleekXMPP provides plugins
         # for data forms and OOB links that will make that easier.
         self.add_event_handler("register", self.register)
+
+        # The message we wish to send, and the JID that
+        # will receive it.
+        self.recipient = recipient
+        self.msg = message
+
+        # The session_start event will be triggered when
+        # the bot establishes its connection with the server
+        # and the XML streams are ready for use. We want to
+        # listen for this event so that we we can initialize
+        # our roster.
+        self.add_event_handler("session_start", self.sendMessage, threaded=True)
 
 
 
@@ -77,7 +89,7 @@ class RegisterBot(sleekxmpp.ClientXMPP):
         self.get_roster()
 
         # We're only concerned about registering, so nothing more to do here.
-        self.disconnect()
+        #self.disconnect()
 
     def register(self, iq):
         """
@@ -112,6 +124,31 @@ class RegisterBot(sleekxmpp.ClientXMPP):
         except IqTimeout:
             logging.error("No response from server.")
             self.disconnect()
+
+    def sendMessage(self, event):
+        """
+        Process the session_start event.
+
+        Typical actions for the session_start event are
+        requesting the roster and broadcasting an initial
+        presence stanza.
+
+        Arguments:
+            event -- An empty dictionary. The session_start
+                     event does not provide any additional
+                     data.
+        """
+        
+        self.send_presence()
+        self.get_roster()
+
+        self.send_message(mto=self.recipient,
+                          mbody=self.msg,
+                          mtype='chat')
+
+        # Using wait=True ensures that the send queue will be
+        # emptied before ending the session.
+        self.disconnect(wait=True)
 
 
 if __name__ == '__main__':
@@ -149,15 +186,21 @@ if __name__ == '__main__':
         opts.jid = raw_input("Username: ")
     if opts.password is None:
         opts.password = getpass.getpass("Password: ")
+    if opts.to is None:
+        opts.to = raw_input("Send To: ")
+    if opts.message is None:
+        opts.message = raw_input("Message: ")
 
     # Setup the RegisterBot and register plugins. Note that while plugins may
     # have interdependencies, the order in which you register them does
     # not matter.
-    xmpp = RegisterBot(opts.jid, opts.password)
+    xmpp = RegisterBot(opts.jid, opts.password, opts.to, opts.message)
     xmpp.register_plugin('xep_0030') # Service Discovery
     xmpp.register_plugin('xep_0004') # Data forms
     xmpp.register_plugin('xep_0066') # Out-of-band Data
     xmpp.register_plugin('xep_0077') # In-band Registration
+
+    xmpp.register_plugin('xep_0199') # XMPP Ping
     
 
     # If you are working with an OpenFire server, you may need
@@ -177,6 +220,7 @@ if __name__ == '__main__':
         #if xmpp.connect(('talk.google.com', 5222)):
         #     ...
         xmpp.process(block=True)
+        
         print("Done")
     else:
         print("Unable to connect.")

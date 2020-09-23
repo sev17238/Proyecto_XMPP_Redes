@@ -137,7 +137,7 @@ if __name__ == '__main__':
         #
         # if xmpp.connect(('.com', 5222)):
         #           ...
-            xmpp.process(block=True)
-            print("Done")
-        else:
-            print("Unable to connect.")
+        xmpp.process(block=True)
+        print("Done")
+    else:
+        print("Unable to connect.")
