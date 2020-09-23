@@ -17,6 +17,27 @@ import random
 import string
 
 from functions import * 
+from XMPP_Client import XMPP_Client
+
+# functions here
+#xmppclient = None
+
+def Register():
+    userName = input("Enter your jabberid: ")
+    passWord = input("Enter a password: ")
+    xmppclient = XMPP_Client(userName,passWord)
+    return xmppclient
+
+def sendMessage(xclient):
+    recipient = input("Enter the JID of the person you want to message: ")
+    message = input("Enter your message: ")
+    xclient.sendMessage(recipient,message,"chat")
+
+def _exit(xclient):
+    xclient.exit()
+
+
+# --------------
 
 Wellcome()
 out = 0
@@ -42,12 +63,12 @@ while out != 1:
     choice = read_integer()
 
     if choice == 1:
-        print(" ")
+        print("")
+        Register()
 
-        pass
     elif choice == 2:
         print(" ")
-        
+        sendMessage(Register())
         pass
     elif choice == 3:
         pass
@@ -77,3 +98,4 @@ while out != 1:
     elif choice == 12:
         out = 1
         theEnd()
+        _exit()

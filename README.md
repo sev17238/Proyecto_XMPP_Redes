@@ -26,7 +26,9 @@ This project features the following tools:
 
 ## References
  - https://sleekxmpp.readthedocs.io/en/latest/
-
+ - https://xmpp.org/extensions/xep-0030.html
+ - https://github.com/fritzy/SleekXMPP/wiki/Roster-Management
+ - https://www.oreilly.com/library/view/xmpp-the-definitive/9780596157524/
 
 ## Licence
 No license.

@@ -149,7 +149,7 @@ if __name__ == '__main__':
         # the one in the JID. For example, to use Google Talk you would
         # need to use:
         #
-        if xmpp.connect(('talk.google.com', 5222)):
+        # if xmpp.connect(('talk.google.com', 5222)):
         #     ...
             xmpp.process(block=False)
             print("Done")
