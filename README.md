@@ -27,7 +27,6 @@ This project features the following tools:
 
 ## How to use it
 Choose the desire option of the displayed menu on the console
-
 1. Register
 2. Login
 3. Logout

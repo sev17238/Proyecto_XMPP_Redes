@@ -26,6 +26,7 @@ import methods
 
 #! functions here -------------------------------------------------------------------
 xmppclient = None
+currentroom = ''
 
 def Register():
     print("REGISTER")
@@ -57,10 +58,20 @@ def sendPrivateMessage(xclient):
     message = input("Enter your message: ")
     xclient.sendPrivateMessage(recipient,message)
 
-def sendRoomMessage(xclient):
+def joinRoom(xclient):
+    #recipient = input("Enter the JID of the person you want to message: ")
+    room = input("Enter the name of the room: ")
+    xclient.joinRoom(room)
+    return room
+
+def sendRoomMessage(xclient,room):
     #recipient = input("Enter the JID of the person you want to message: ")
     message = input("Enter your message: ")
-    xclient.sendRoomMessage(message)
+    xclient.sendRoomMessage(room,message)
+
+def addUser(xclient):
+    user = input("Enter the user you want to add to your contacts: ")
+    xclient.addUser(user)
 
 def _exit(xclient):
     xclient.exit()
@@ -113,33 +124,36 @@ def menu():
         menu()
     elif choice == 5:
         print(" ")
-
-        pass
+        xmppclient.alert()
+        menu()
     elif choice == 6:
         print(" ")
-
-        pass
+        addUser(xmppclient)
+        menu()
     elif choice == 7:
         print(" ")
 
     elif choice == 8:
         print(" ")
-       
 
     elif choice == 9:
         print(" ")
         sendPrivateMessage(xmppclient)
-
+        menu()
     elif choice == 10:
         print(" ")
-
+        currentroom = joinRoom(xmppclient)
+        menu()
     elif choice == 11:
         print(" ")
-
+        sendRoomMessage(currentroom,xmppclient)
+        menu()
     elif choice == 12:
         print(" ")
         theEnd()
         exit(xmppclient)
 
     menu()
+
 menu()
+

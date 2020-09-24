@@ -3,7 +3,7 @@
 ####################################################################
 # Curso: Redes
 # Programa: functions.py
-# Propósito: modulo de funciones utiles para el proyecto
+# Propósito: useful functions module
 # Fecha: 08/2020
 ####################################################################
 

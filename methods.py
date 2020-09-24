@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+####################################################################
+# Diego Sevilla 17238
+####################################################################
+# Curso: Redes
+# Programa: methods.py
+# Propósito: module with a registerFunction and a xmpp client class
+# for interacting with a xmpp server.
+# Fecha: 08/2020
+####################################################################
+
+
 """
     SleekXMPP: The Sleek XMPP Library
     Copyright (C) 2010  Nathanael C. Fritz
@@ -36,7 +47,6 @@ def registerUser(user,passw):
     jid = xmpp.JID(usuario)
     cli = xmpp.Client(jid.getDomain(), debug=[])
     cli.connect()
-
     if xmpp.features.register(cli, jid.getDomain(), {'username': jid.getNode(), 'password': password}):
         return True
     else:
@@ -57,18 +67,15 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         self.auto_subscribe = True 
         self.jabberid = jid
 
-        self.room = None
+        #self.room = None
 
         self.add_event_handler('session_start', self.session_start)
-        #self.add_event_handler("unregistered_user", self.unregister) # The register event provides an Iq result stanza with a registration form from the server.
         self.add_event_handler("message", self.receive_messages)
         #self.add_event_handler("changed_subscription", self.getRosterFor)
         self.add_event_handler("got_offline",self.offline_notification)
 
         self.presences_received = threading.Event()
-       
         #self.add_event_handler("got_online",self.online_notification)
-        #self.add_event_handler("groupchat_message", self.muc_message)
 
         self.received_list = set()
         self.contacts = []
@@ -76,16 +83,13 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         self.contacts_list = {}
         self.username = jid
         #self.recieved_presences = threading.Event()
-
+        
         self.register_plugin('xep_0030') # Service Discovery
         self.register_plugin('xep_0004') # Data forms
         self.register_plugin('xep_0066') # Out-of-band Data
         self.register_plugin('xep_0077') # In-band Registration
-
         self.register_plugin('xep_0096') # Jabber search
-
         self.register_plugin('xep_0199') # XMPP Ping
-
 
         '''self.plugin['xep_0045'].joinMUC(self.room,
                                         self.nick,
@@ -138,6 +142,7 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
 
     #! messages area --------------------------------------------------------------------------------------
     def sendPrivateMessage(self, recipient, msg):
+        self.sendNotification(recipient,'Is writing...','composing')
         self.send_message(mto=recipient,
                           mbody=msg,
                           mtype='chat')
@@ -146,10 +151,19 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         print("")
         print(""+str(msg['from'].user)+"@"+str(msg['from'].domain)+": "+str(msg['body']))
 
-    def sendRoomMessage(self, user,msg):
-        self.send_message(mto=user,mbody=msg,mtype='groupchat')
+    def sendRoomMessage(self, room, msg):
+        self.send_message(mto=room,mbody=msg,mtype='groupchat')
+   
     #! END messages area --------------------------------------------------------------------------------------
-
+    
+    def joinRoom(self,room):
+        self.get_roster()
+        self.send_presence()
+        self.plugin['xep_0045'].joinMUC(room,
+                                        self.jid,
+                                        # If a room password is needed, use:
+                                        # password=the_room_password,
+                                        wait=True)
 
     #! Notifications AREA --------------------------------------------------------------------------------------
     def online_notification(self,event):
@@ -162,7 +176,7 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         print("Offline Notification from"+ str(event["form"].user))
         print("")
 
-    def Notification(self,to,body,ntype):
+    def sendNotification(self,to,body,ntype):
         msg = self.Message()
         msg['to'] = 'chat'
         msg['type'] = body
@@ -177,14 +191,16 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
             raise Exception("Unable to send notification",IqError)
             sys.exit(1)
         except IqTimeout:
-            raise Exception("Server Error")
+            raise Exception("Server Not Responding")
 
 
     #! Notifications AREA --------------------------------------------------------------------------------------
 
+    #! Contacts and users area ------------------------------------------------------------------------
     def addUser(self,user):
         try:
             self.send_presence_subscription(pto=user)
+            print(" "+user+" added to your contacts !")
             return 1
         except IqError:
             raise Exception("Unable to add "+user+"you your contacts. Try again.")
@@ -193,16 +209,13 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
 
     def alert(self):
         self.get_roster()
+        print(self.get_roster)
 
-    def JoinRoom(self,room):
-        self.get_roster()
-        self.send_presence()
-        self.plugin['xep_0045'].joinMUC(self.room,
-                                        # If a room password is needed, use:
-                                        # password=the_room_password,
-                                        wait=True)
+    #! Contacts and users area ------------------------------------------------------------------------
 
     
+
+
 '''
 if __name__ == '__main__':
     # Setup the command line arguments.
