@@ -8,25 +8,43 @@
 ####################################################################
 
 # ---------------ZONA DE LIBRERIAS-------------------
-import logging
-from sleekxmpp import ClientXMPP
-from sleekxmpp.exceptions import IqError, IqTimeout
+
+#import logging
+#from sleekxmpp import ClientXMPP
+#from sleekxmpp.exceptions import IqError, IqTimeout
 
 import time
 import random
 import string
 
-from functions import * 
+from functions import *
+from XMPP_Client import XMPP_Register
 from XMPP_Client import XMPP_Client
 
-# functions here
-#xmppclient = None
+
+#! functions here -------------------------------------------------------------------
+xmppregister = None
+xmppclient = None
 
 def Register():
+    print("REGISTER")
+    print("_______________")
     userName = input("Enter your jabberid: ")
     passWord = input("Enter a password: ")
-    xmppclient = XMPP_Client(userName,passWord)
-    return xmppclient
+    #xmpp_clientt = XMPP_Client(userName,passWord)
+    xmpp_reg = XMPP_Register(userName,passWord)
+    return xmpp_reg
+
+def Login():
+    #xclient.sendMessage(recipient,message,"chat")
+    userName = input("Enter your jabberid: ")
+    passWord = input("Enter your password: ")
+    xclient = XMPP_Client(userName,passWord)
+    xclient.connection_login()
+    return xclient
+
+def Logout(xclient):
+    xclient.connection_logout()
 
 def sendMessage(xclient):
     recipient = input("Enter the JID of the person you want to message: ")
@@ -37,7 +55,7 @@ def _exit(xclient):
     xclient.exit()
 
 
-# --------------
+#! --------------------------------------------------------------------------------------------------
 
 Wellcome()
 out = 0
@@ -47,32 +65,34 @@ while out != 1:
     print(" ")
     print(" -----------------------------------------------------------------")
     print("  1. Register")
-    print("  2. Log In (New Account)")
+    print("  2. Log In ")
     print("  3. Log Out")
     print("  4. Delete Account")
     print("  5. Show Connected users, contacts and status) ")
     print("  6. Show Info from an specific user")
     print("  7. Two Persons Chat")
     print("  8. Group Chat")
-    print("  9. Notify Presence")
-    print(" 10. Send/Recieve Notifications")
-    print(" 11. Send/Recieve Files")
-    print(" 12. Exit")
+    print(" . Notify Presence")
+    print(" . Send/Recieve Notifications")
+    print(" . Send/Recieve Files")
+    print(" 9. Exit")
     print("__________________________________________________________________")
 
     choice = read_integer()
 
     if choice == 1:
         print("")
-        Register()
+        xmppregister = Register()
 
     elif choice == 2:
         print(" ")
-        sendMessage(Register())
+        xmppclient = Login()
         pass
     elif choice == 3:
+        Logout(xmppclient)
         pass
     elif choice == 4:
+        
         pass
     elif choice == 5:
         print(" ")
@@ -85,17 +105,11 @@ while out != 1:
         pass
     elif choice == 7:
         print(" ")
+        sendMessage(xmppclient)
         
-        pass
     elif choice == 8:
         pass
     elif choice == 9:
-        pass
-    elif choice == 10:
-        pass
-    elif choice == 11:
-        pass
-    elif choice == 12:
         out = 1
         theEnd()
-        _exit()
+        exit(xmppclient)

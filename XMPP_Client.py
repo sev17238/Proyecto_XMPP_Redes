@@ -27,24 +27,76 @@ if sys.version_info < (3, 0):
 else:
     raw_input = input
 
+class XMPP_Register(sleekxmpp.ClientXMPP):
+    """
+    A XMPP register class that will attempt to register an account
+    with an XMPP server and then call the client class.
+    """
+    def __init__(self, jid, password):
+        sleekxmpp.ClientXMPP.__init__(self, jid, password)
+        self.add_event_handler("session_start", self.start) # The session_start event will be triggered when the connection with the server and the XML streams are ready for use.        
+        self.add_event_handler("register", self.register) # The register event provides an Iq result stanza with a registration form from the server.
+
+    def start(self, event):
+        """
+        Process the session_start event.
+        Typical actions for the session_start event are
+        requesting the roster and broadcasting an initial
+        presence stanza.
+        """
+        self.send_presence()
+        self.get_roster()
+        self.disconnect()
+
+    def register(self, iq):
+        """
+        Fill out and submit a registration form.
+        """
+        resp = self.Iq()
+        resp['type'] = 'set'
+        resp['register']['username'] = self.boundjid.user
+        resp['register']['password'] = self.password
+        try:
+            resp.send(now=True)
+            logging.info("Account created for %s!" % self.boundjid)
+            print("Account created for %s!" % self.boundjid)
+        except IqError as e:
+            logging.error("Could not register account: %s" % 
+                    e.iq['error']['text'])
+            self.disconnect()
+        except IqTimeout:
+            logging.error("No response from server.")
+            self.disconnect()
 
 class XMPP_Client(sleekxmpp.ClientXMPP):
     """
-    A XMPP client that will attempt to register an account
+    A XMPP client that will have an account
     with an XMPP server and interact with it respectively.
     """
     def __init__(self, jid, password):
         #sleekxmpp.ClientXMPP.__init__(self, jid, password)
-        super(XMPP_Client, self).__init__(jid, password)
+        #super(XMPP_Client, self).__init__(jid, password)
+        sleekxmpp.ClientXMPP.__init__(self, jid, password)
 
+        self.connected = True
         self.auto_authorize = True 
         self.auto_subscribe = True 
+        self.jabberid = jid
 
-        self.add_event_handler("session_start", self.start) # The session_start event will be triggered when the connection with the server and the XML streams are ready for use.        
-        self.add_event_handler("register_user", self.register) # The register event provides an Iq result stanza with a registration form from the server.
-        self.add_event_handler("receive_messages", self.receive_messages)
-        #self.add_event_handler("sendMessage", self.sendMessage)
-        self.add_event_handler("offline",self.offline_notification)
+        self.nick = 'sevdev'
+
+
+        self.add_event_handler('session_start', self.session_start)
+        #self.add_event_handler("unregistered_user", self.unregister) # The register event provides an Iq result stanza with a registration form from the server.
+        self.add_event_handler("message", self.receive_messages)
+        #self.add_event_handler("changed_subscription", self.getRosterFor)
+        self.add_event_handler("got_offline",self.offline_notification)
+       
+        #self.add_event_handler("got_online",self.online_notification)
+        self.add_event_handler("groupchat_message", self.muc_message)
+
+        
+
 
         self.received_list = set()
         self.contacts = []
@@ -62,74 +114,74 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
 
         self.register_plugin('xep_0199') # XMPP Ping
 
-        if self.connect():
-            print("Login Successfully!")
-            self.process(block=False)
-        else:
-            print("Unable to connect.")
+        self.plugin['xep_0045'].joinMUC(self.room,
+                                        self.nick,
+                                        # If a room password is needed, use:
+                                        # password=the_room_password,
+                                        wait=True)
 
+        #if self.connect():
+        #    print("Login Successfully! Proceed to other options.")
+        #    self.process(block=False)
+        #else:
+        #    print("Unable to connect.")
 
-    def start(self, event):
+    def session_start(self):
         """
-        Process the session_start event.
-        Typical actions for the session_start event are
-        requesting the roster and broadcasting an initial
-        presence stanza.
+        Start
         """
         self.send_presence(
             pshow='chat',
             pstatus='Available'
         )
-        self.get_roster(
-        )
-
-    def register(self, iq):
-        """
-        Fill out and submit a registration form.
-        The form may be composed of basic registration fields, a data form,
-        an out-of-band link, or any combination thereof. Data forms and OOB
-        links can be checked for as so:
-        """
-        resp = self.Iq()
-        resp['type'] = 'set'
-        resp['register_user']['username'] = self.boundjid.user
-        resp['register_user']['password'] = self.password
-
-        try:
-            resp.send(now=True)
-            logging.info("Account created for %s!" % self.boundjid)
-        except IqError as e:
-            logging.error("Could not register account: %s" %
-                    e.iq['error']['text'])
-            self.disconnect()
-        except IqTimeout:
-            logging.error("No response from server.")
-            self.disconnect()
-
-    def sendMessage(self, recipient, msg, m_type):
-        self.send_presence()
         self.get_roster()
 
+    def sendMessage(self, recipient, msg, m_type):
+        #self.send_presence()
+        #self.get_roster()
         self.send_message(mto=recipient,
                           mbody=msg,
                           mtype=m_type)
 
-    def offline_notification(self,event):
-        print("hi")
+    def receive_messages(self, msg):
+        #self.send_presence()
+        #self.get_roster()
+        #if msg['type'] in ('chat'):
+        print(""+str(msg['from'].user)+"@"+str(msg['from'].domain)+": "+str(msg['body']))
+
+    def online_notification(self,event):
+        #msg = self.sendMessage()
         #print(f"Offline Notification from {event["form"].user}")
+        pass
+    
+    def offline_notification(self,event):
+        print("")
+        print("Offline Notification from"+ str(event["form"].user))
+        print("")
 
-    def receive_messages(self, event, recipient, msg):
-        self.send_presence()
-        self.get_roster()
+    def connection_login(self):
+        print('Login')
+        print('_____________')
+        if self.connect():
+            #self.process()
+            self.process(block=False)
+            self.send_presence()
+            print('Login succesfully!')
+            return True
+        else:
+            print('Failed to login!')
+            return False
 
-        #self.send_message(mto=recipient,
-        #                  mbody=msg,
-        #                  mtype='chat')
+    def connection_logout(self):
+        print('Logout')
+        print('_____________')
+        self.disconnect(wait=False)
 
     def exit(self):
         self.disconnect(wait=True)
+        self.process(block=True)
 
-
+    
 '''
 if __name__ == '__main__':
     # Setup the command line arguments.
