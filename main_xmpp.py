@@ -20,7 +20,7 @@ import string
 from functions import *
 #from XMPP_Client import XMPP_Registedr
 
-import metodos
+import methods
 #from XMPP_Client import registerUser
 
 
@@ -33,26 +33,34 @@ def Register():
     userName = input("Enter your jabberid: ")
     passWord = input("Enter a password: ")
 
-    if(metodos.registerUser(userName,passWord)):
-        print('yes')        
+    if(methods.registerUser(userName,passWord)):
+        print()
+        print('Account for '+userName+' created!')     
+        print()   
     else:
-        print('no')
+        print()
+        print("Couldn't create account! This account already exists!")
+        print()
     pass
 
 def Login():
-    #xclient.sendMessage(recipient,message,"chat")
     userName = input("Enter your jabberid: ")
     passW = input("pass: ")
-    xclient = metodos.XMPP_Client(userName,passW)
+    xclient = methods.XMPP_Client(userName,passW)
     return xclient
 
 def Logout(xclient):
    xclient.connection_logout()
 
-def sendMessage(xclient):
+def sendPrivateMessage(xclient):
     recipient = input("Enter the JID of the person you want to message: ")
     message = input("Enter your message: ")
-    xclient.sendMessage(recipient,message,"chat")
+    xclient.sendPrivateMessage(recipient,message)
+
+def sendRoomMessage(xclient):
+    #recipient = input("Enter the JID of the person you want to message: ")
+    message = input("Enter your message: ")
+    xclient.sendRoomMessage(message)
 
 def _exit(xclient):
     xclient.exit()
@@ -71,14 +79,17 @@ def menu():
     print("  2. Log In ")
     print("  3. Log Out")
     print("  4. Delete Account")
-    print("  5. Show Connected users, contacts and status) ")
-    print("  6. Show Info from an specific user")
-    print("  7. Two Persons Chat")
-    print("  8. Group Chat")
+    print("  5. Show Connected users ")
+    print("  6. Add user to contacts ")
+    print("  7. Show Contacts and Status ")
+    print("  8. Show Info from an specific user")
+    print("  9. Send private message")
+    print(" 10. Join chat room")
+    print(" 11. Send messages to room")
     print(" . Notify Presence")
     print(" . Send/Recieve Notifications")
     print(" . Send/Recieve Files")
-    print(" 9. Exit")
+    print(" 12. Exit")
     print("__________________________________________________________________")
 
     choice = read_integer()
@@ -93,16 +104,16 @@ def menu():
         xmppclient = Login()
         menu()
     elif choice == 3:
+        print(" ")
         Logout(xmppclient)
         menu()
     elif choice == 4:
-        userName = input("user: " )
-        xmppclient.deleteAccount(userName)
+        print(" ")
+        xmppclient.deleteAccount()
         menu()
     elif choice == 5:
         print(" ")
-        test = input("input something: ")
-        
+
         pass
     elif choice == 6:
         print(" ")
@@ -110,11 +121,23 @@ def menu():
         pass
     elif choice == 7:
         print(" ")
-        sendMessage(xmppclient)
-        
+
     elif choice == 8:
-        pass
+        print(" ")
+       
+
     elif choice == 9:
+        print(" ")
+        sendPrivateMessage(xmppclient)
+
+    elif choice == 10:
+        print(" ")
+
+    elif choice == 11:
+        print(" ")
+
+    elif choice == 12:
+        print(" ")
         theEnd()
         exit(xmppclient)
 

@@ -18,6 +18,7 @@
 This project features the following tools:
 
 - :snake: **Python** — 3.8
+- :speech_balloon: **XMPP**
 
 ## Installation
 1. Clone this repo using `https://github.com/sev17238/Proyecto_XMPP_Redes.git`
@@ -29,6 +30,7 @@ This project features the following tools:
  - https://xmpp.org/extensions/xep-0030.html
  - https://github.com/fritzy/SleekXMPP/wiki/Roster-Management
  - https://www.oreilly.com/library/view/xmpp-the-definitive/9780596157524/
+ - https://docs.python.org/2/library/xml.etree.elementtree.html
 
 ## Licence
 No license.

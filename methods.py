@@ -18,6 +18,7 @@ import sleekxmpp
 from sleekxmpp.exceptions import IqError, IqTimeout
 import xmpp
 import threading
+import xml.etree.ElementTree as TreeX
 
 # Python versions before 3.0 do not use UTF-8 encoding
 # by default. To ensure that Unicode is handled properly
@@ -56,8 +57,7 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         self.auto_subscribe = True 
         self.jabberid = jid
 
-        #self.nick = 'sevdev'
-
+        self.room = None
 
         self.add_event_handler('session_start', self.session_start)
         #self.add_event_handler("unregistered_user", self.unregister) # The register event provides an Iq result stanza with a registration form from the server.
@@ -69,9 +69,6 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
        
         #self.add_event_handler("got_online",self.online_notification)
         #self.add_event_handler("groupchat_message", self.muc_message)
-
-        
-
 
         self.received_list = set()
         self.contacts = []
@@ -89,6 +86,7 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
 
         self.register_plugin('xep_0199') # XMPP Ping
 
+
         '''self.plugin['xep_0045'].joinMUC(self.room,
                                         self.nick,
                                         # If a room password is needed, use:
@@ -101,6 +99,8 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         else:
             print("Unable to connect.")
 
+
+    #! Conection managment AREA --------------------------------------------------------------------------------------
     def session_start(self,event):
         """
         Start
@@ -111,54 +111,15 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         )
         self.get_roster()
 
-
-    def sendMessage(self, recipient, msg, m_type):
-        #self.send_presence()
-        #self.get_roster()
-        self.send_message(mto=recipient,
-                          mbody=msg,
-                          mtype=m_type)
-
-    def receive_messages(self, msg):
-        #self.send_presence()
-        #self.get_roster()
-        #if msg['type'] in ('chat'):
-        print(""+str(msg['from'].user)+"@"+str(msg['from'].domain)+": "+str(msg['body']))
-
-
-    def online_notification(self,event):
-        #msg = self.sendMessage()
-        #print(f"Offline Notification from {event["form"].user}")
-        pass
-    
-    def offline_notification(self,event):
-        print("")
-        print("Offline Notification from"+ str(event["form"].user))
-        print("")
-
-    def connection_login(self):
-        print('Login')
-        print('_____________')
-        if self.connect():
-            #self.process()
-            self.process(block=False)
-            self.send_presence()
-            print('Login succesfully!')
-            return True
-        else:
-            print('Failed to login!')
-            return False
-
     def connection_logout(self):
-        print('Logout')
-        print('_____________')
+        print('Logout request completed.')
         self.disconnect(wait=False)
 
     def exit(self):
         self.disconnect(wait=True)
         self.process(block=True)
 
-    def deleteAccount(self,user):
+    def deleteAccount(self):
         stanzaReq = self.Iq()
         stanzaReq['type'] = 'set'
         stanzaReq['from'] = self.jabberid
@@ -171,6 +132,75 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
             sys.exit(1)
         except IqTimeout:
             logging.error("No response from server.")
+    #! END Conection managment AREA--------------------------------------------------------------------------------------
+
+
+
+    #! messages area --------------------------------------------------------------------------------------
+    def sendPrivateMessage(self, recipient, msg):
+        self.send_message(mto=recipient,
+                          mbody=msg,
+                          mtype='chat')
+
+    def receive_messages(self, msg):
+        print("")
+        print(""+str(msg['from'].user)+"@"+str(msg['from'].domain)+": "+str(msg['body']))
+
+    def sendRoomMessage(self, user,msg):
+        self.send_message(mto=user,mbody=msg,mtype='groupchat')
+    #! END messages area --------------------------------------------------------------------------------------
+
+
+    #! Notifications AREA --------------------------------------------------------------------------------------
+    def online_notification(self,event):
+            #msg = self.sendMessage()
+        #print(f"Offline Notification from {event["form"].user}")
+        pass
+
+    def offline_notification(self,event):
+        print("")
+        print("Offline Notification from"+ str(event["form"].user))
+        print("")
+
+    def Notification(self,to,body,ntype):
+        msg = self.Message()
+        msg['to'] = 'chat'
+        msg['type'] = body
+        if(ntype == 'active'): itemXML = TreeX.fromstring("<active xmlns='http://habber.org/protocol/chatstates'/>")
+        elif(ntype == 'composing'): itemXML = TreeX.fromstring("<composing xmlns='http://habber.org/protocol/chatstates'/>")
+        elif(ntype == 'inactive'): itemXML = TreeX.fromstring("<inactive xmlns='http://habber.org/protocol/chatstates'/>")
+
+        msg.append(itemXML)
+        try:
+            msg.send()
+        except IqError:
+            raise Exception("Unable to send notification",IqError)
+            sys.exit(1)
+        except IqTimeout:
+            raise Exception("Server Error")
+
+
+    #! Notifications AREA --------------------------------------------------------------------------------------
+
+    def addUser(self,user):
+        try:
+            self.send_presence_subscription(pto=user)
+            return 1
+        except IqError:
+            raise Exception("Unable to add "+user+"you your contacts. Try again.")
+        except IqTimeout:
+            raise Exception("Server not esponding.")
+
+    def alert(self):
+        self.get_roster()
+
+    def JoinRoom(self,room):
+        self.get_roster()
+        self.send_presence()
+        self.plugin['xep_0045'].joinMUC(self.room,
+                                        # If a room password is needed, use:
+                                        # password=the_room_password,
+                                        wait=True)
 
     
 '''
