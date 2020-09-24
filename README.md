@@ -18,12 +18,21 @@
 This project features the following tools:
 
 - :snake: **Python** — 3.8
-- :speech_balloon: **XMPP**
+- :speech_balloon: **XMPP Protocol**
 
 ## Installation
 1. Clone this repo using `https://github.com/sev17238/Proyecto_XMPP_Redes.git`
 2. Move to the appropriate directory: `cd Proyecto_XMPP_Redes`.<br />
 3. Run `main_xmpp.py` file. <br />
+
+## How to use it
+Choose the desire option of the displayed menu on the console
+
+1. Register
+2. Login
+3. Logout
+4. Delete Account
+5. Send Private Message
 
 ## References
  - https://sleekxmpp.readthedocs.io/en/latest/
