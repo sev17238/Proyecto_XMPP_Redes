@@ -16,6 +16,7 @@ from optparse import OptionParser
 
 import sleekxmpp
 from sleekxmpp.exceptions import IqError, IqTimeout
+import xmpp
 
 # Python versions before 3.0 do not use UTF-8 encoding
 # by default. To ensure that Unicode is handled properly
@@ -27,46 +28,17 @@ if sys.version_info < (3, 0):
 else:
     raw_input = input
 
-class XMPP_Register(sleekxmpp.ClientXMPP):
-    """
-    A XMPP register class that will attempt to register an account
-    with an XMPP server and then call the client class.
-    """
-    def __init__(self, jid, password):
-        sleekxmpp.ClientXMPP.__init__(self, jid, password)
-        self.add_event_handler("session_start", self.start) # The session_start event will be triggered when the connection with the server and the XML streams are ready for use.        
-        self.add_event_handler("register", self.register) # The register event provides an Iq result stanza with a registration form from the server.
+def registerUser(user,passw):
+    usuario = user
+    password = passw
+    jid = xmpp.JID(usuario)
+    cli = xmpp.Client(jid.getDomain(), debug=[])
+    cli.connect()
 
-    def start(self, event):
-        """
-        Process the session_start event.
-        Typical actions for the session_start event are
-        requesting the roster and broadcasting an initial
-        presence stanza.
-        """
-        self.send_presence()
-        self.get_roster()
-        self.disconnect()
-
-    def register(self, iq):
-        """
-        Fill out and submit a registration form.
-        """
-        resp = self.Iq()
-        resp['type'] = 'set'
-        resp['register']['username'] = self.boundjid.user
-        resp['register']['password'] = self.password
-        try:
-            resp.send(now=True)
-            logging.info("Account created for %s!" % self.boundjid)
-            print("Account created for %s!" % self.boundjid)
-        except IqError as e:
-            logging.error("Could not register account: %s" % 
-                    e.iq['error']['text'])
-            self.disconnect()
-        except IqTimeout:
-            logging.error("No response from server.")
-            self.disconnect()
+    if xmpp.features.register(cli, jid.getDomain(), {'username': jid.getNode(), 'password': password}):
+        return True
+    else:
+        return False
 
 class XMPP_Client(sleekxmpp.ClientXMPP):
     """
@@ -144,10 +116,12 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
                           mtype=m_type)
 
     def receive_messages(self, msg):
+        print(msg)
         #self.send_presence()
         #self.get_roster()
         #if msg['type'] in ('chat'):
         print(""+str(msg['from'].user)+"@"+str(msg['from'].domain)+": "+str(msg['body']))
+
 
     def online_notification(self,event):
         #msg = self.sendMessage()
@@ -180,6 +154,20 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
     def exit(self):
         self.disconnect(wait=True)
         self.process(block=True)
+
+    def deleteAccount(self,user):
+        stanzaReq = self.Iq()
+        stanzaReq['type'] = 'set'
+        stanzaReq['from'] = self.jabberid
+        stanzaReq['register']['remove'] = True
+        try:
+            stanzaReq.send(now=True)
+            print("Account "+str(self.jabberid)+" deleted!")
+        except IqError as e:
+            logging.error("Could not delete account")
+            sys.exit(1)
+        except IqTimeout:
+            logging.error("No response from server.")
 
     
 '''
