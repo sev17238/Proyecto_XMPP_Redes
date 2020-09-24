@@ -18,21 +18,21 @@ import random
 import string
 
 from functions import *
-#from XMPP_Client import XMPP_Register
+#from XMPP_Client import XMPP_Registedr
 
 import metodos
 #from XMPP_Client import registerUser
 
 
 #! functions here -------------------------------------------------------------------
-
+xmppclient = None
 
 def Register():
     print("REGISTER")
     print("_______________")
     userName = input("Enter your jabberid: ")
     passWord = input("Enter a password: ")
-    
+
     if(metodos.registerUser(userName,passWord)):
         print('yes')        
     else:
@@ -47,12 +47,12 @@ def Login():
     return xclient
 
 def Logout(xclient):
-   ''' xclient.connection_logout()'''
+   xclient.connection_logout()
 
 def sendMessage(xclient):
-    '''recipient = input("Enter the JID of the person you want to message: ")
+    recipient = input("Enter the JID of the person you want to message: ")
     message = input("Enter your message: ")
-    xclient.sendMessage(recipient,message,"chat")'''
+    xclient.sendMessage(recipient,message,"chat")
 
 def _exit(xclient):
     xclient.exit()
@@ -61,11 +61,10 @@ def _exit(xclient):
 #! --------------------------------------------------------------------------------------------------
 
 Wellcome()
-out = 0
-xmppclient = None
-# ciclo while para el menu del juego
-while out != 1:
 
+# ciclo while para el menu del juego
+
+def menu():
     print(" ")
     print(" -----------------------------------------------------------------")
     print("  1. Register")
@@ -87,19 +86,19 @@ while out != 1:
     if choice == 1:
         print("")
         Register()
-
+        menu()
     elif choice == 2:
         print(" ")
         global xmppclient
         xmppclient = Login()
-
+        menu()
     elif choice == 3:
         Logout(xmppclient)
-        pass
+        menu()
     elif choice == 4:
         userName = input("user: " )
         xmppclient.deleteAccount(userName)
-        pass
+        menu()
     elif choice == 5:
         print(" ")
         test = input("input something: ")
@@ -116,6 +115,8 @@ while out != 1:
     elif choice == 8:
         pass
     elif choice == 9:
-        out = 1
         theEnd()
         exit(xmppclient)
+
+    menu()
+menu()

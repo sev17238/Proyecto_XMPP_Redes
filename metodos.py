@@ -17,6 +17,7 @@ from optparse import OptionParser
 import sleekxmpp
 from sleekxmpp.exceptions import IqError, IqTimeout
 import xmpp
+import threading
 
 # Python versions before 3.0 do not use UTF-8 encoding
 # by default. To ensure that Unicode is handled properly
@@ -55,7 +56,7 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         self.auto_subscribe = True 
         self.jabberid = jid
 
-        self.nick = 'sevdev'
+        #self.nick = 'sevdev'
 
 
         self.add_event_handler('session_start', self.session_start)
@@ -63,9 +64,11 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         self.add_event_handler("message", self.receive_messages)
         #self.add_event_handler("changed_subscription", self.getRosterFor)
         self.add_event_handler("got_offline",self.offline_notification)
+
+        self.presences_received = threading.Event()
        
         #self.add_event_handler("got_online",self.online_notification)
-        self.add_event_handler("groupchat_message", self.muc_message)
+        #self.add_event_handler("groupchat_message", self.muc_message)
 
         
 
@@ -86,19 +89,19 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
 
         self.register_plugin('xep_0199') # XMPP Ping
 
-        self.plugin['xep_0045'].joinMUC(self.room,
+        '''self.plugin['xep_0045'].joinMUC(self.room,
                                         self.nick,
                                         # If a room password is needed, use:
                                         # password=the_room_password,
-                                        wait=True)
+                                        wait=True)'''
 
-        #if self.connect():
-        #    print("Login Successfully! Proceed to other options.")
-        #    self.process(block=False)
-        #else:
-        #    print("Unable to connect.")
+        if self.connect():
+            print("Login Successfully! Proceed to other options.")
+            self.process(block=False)
+        else:
+            print("Unable to connect.")
 
-    def session_start(self):
+    def session_start(self,event):
         """
         Start
         """
@@ -108,6 +111,7 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         )
         self.get_roster()
 
+
     def sendMessage(self, recipient, msg, m_type):
         #self.send_presence()
         #self.get_roster()
@@ -116,7 +120,6 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
                           mtype=m_type)
 
     def receive_messages(self, msg):
-        print(msg)
         #self.send_presence()
         #self.get_roster()
         #if msg['type'] in ('chat'):
