@@ -153,11 +153,12 @@ def menu():
         menu()
     elif choice == 10:
         print(" ")
+        global currentroom
         currentroom = joinRoom(xmppclient)
         menu()
     elif choice == 11:
         print(" ")
-        sendRoomMessage(currentroom,xmppclient)
+        sendRoomMessage(xmppclient,currentroom)
         menu()
     elif choice == 12:
         print(" ")
