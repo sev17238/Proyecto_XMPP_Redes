@@ -171,12 +171,12 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
     #! Notifications AREA --------------------------------------------------------------------------------------
     def online_notification(self,event):
         print("+ + + +")
-        print("Online Notification from"+ str(event["form"].user))
+        print("Online Notification from"+ str(event["from"].user))
         print("+ + + +")
 
     def offline_notification(self,event):
         print("- - - -")
-        print("Offline Notification from"+ str(event["form"].user))
+        print("Offline Notification from"+ str(event["from"].user))
         print("- - - -")
 
     def sendNotification(self,to,body,ntype):
