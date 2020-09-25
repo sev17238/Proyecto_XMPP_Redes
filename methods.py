@@ -248,7 +248,31 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
             raise Exception("Error: %s" % e.iq['error']['text'])
         except IqTimeout:
             raise Exception("No response from server.")
-    
+
+    '''def showContactsList(self):
+        try:
+            self.get_roster()
+	    except IqError as e:
+	        print('Error: %s' % e.iq['error']['condition'])
+	    except IqTimeout:
+	        print('No response from server.')
+	    groups = self.client_roster.groups()
+		for group in groups:
+			print('\n%s' % group)
+	    	print('-' * 50)
+			for jid in groups[group]:
+			    sub = self.client_roster[jid]['subscription']
+			    name = self.client_roster[jid]['name']
+				if self.client_roster[jid]['name']:
+					print(' %s (%s) [%s]' % (name, jid, sub))
+				else:
+					print(' %s [%s]' % (jid, sub))
+				connections = self.client_roster.presence(jid)
+				for res, pres in connections.items():
+					show = 'available'
+					if pres['status']:
+						print('       %s' % pres['status'])'''
+
     #Check for a user
     def checkUser(self, jid):
         print('-------Looking for a specific contact -------')
@@ -256,33 +280,7 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         print(self.client_roster.presence(jid))
         print('---------------------------------------------\n')
 
-    def showContactsList(self):
-    		try:
-			self.get_roster()
-		except IqError as err:
-			print('Error: %s' % err.iq['error']['condition'])
-		except IqTimeout:
-			print('No response from server.')
-
-		groups = self.client_roster.groups()
-		for group in groups:
-			print('\n%s' % group)
-			print('-' * 50)
-			for jid in groups[group]:
-				sub = self.client_roster[jid]['subscription']
-				name = self.client_roster[jid]['name']
-				if self.client_roster[jid]['name']:
-					print(' %s (%s) [%s]' % (name, jid, sub))
-				else:
-					print(' %s [%s]' % (jid, sub))
-
-				connections = self.client_roster.presence(jid)
-				for res, pres in connections.items():
-					show = 'available'
-					if pres['status']:
-						print('       %s' % pres['status'])
-
-    #! Contacts and users area ------------------------------------------------------------------------
+#! Contacts and users area ------------------------------------------------------------------------
 
     
 
