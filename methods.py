@@ -83,7 +83,6 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         self.users_list = {}
         self.contacts_list = {}
         self.username = jid
-        #self.recieved_presences = threading.Event()
         
         self.register_plugin('xep_0030') # Service Discovery
         self.register_plugin('xep_0004') # Data forms
@@ -256,6 +255,32 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         print('The information of ' + jid)
         print(self.client_roster.presence(jid))
         print('---------------------------------------------\n')
+
+    def showContactsList(self):
+    		try:
+			self.get_roster()
+		except IqError as err:
+			print('Error: %s' % err.iq['error']['condition'])
+		except IqTimeout:
+			print('No response from server.')
+
+		groups = self.client_roster.groups()
+		for group in groups:
+			print('\n%s' % group)
+			print('-' * 50)
+			for jid in groups[group]:
+				sub = self.client_roster[jid]['subscription']
+				name = self.client_roster[jid]['name']
+				if self.client_roster[jid]['name']:
+					print(' %s (%s) [%s]' % (name, jid, sub))
+				else:
+					print(' %s [%s]' % (jid, sub))
+
+				connections = self.client_roster.presence(jid)
+				for res, pres in connections.items():
+					show = 'available'
+					if pres['status']:
+						print('       %s' % pres['status'])
 
     #! Contacts and users area ------------------------------------------------------------------------
 

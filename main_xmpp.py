@@ -77,8 +77,15 @@ def addUser(xclient):
     xclient.addUser(user)
 
 def usersList(xclient):
-    xclient.alert()
+    #xclient.alert()
     xclient.serverResponseList()
+
+def showContacts(xclient):
+    xclient.showContactsList()
+
+def checkUser(xclient,user):
+    user = input("Enter a user: ")
+    xclient.checkUser(user)
 
 def _exit(xclient):
     xclient.exit()
@@ -136,10 +143,10 @@ def menu():
         menu()
     elif choice == 7:
         print(" ")
-
+        showContacts(xmppclient)
     elif choice == 8:
         print(" ")
-
+        checkUser(xmppclient)
     elif choice == 9:
         print(" ")
         sendPrivateMessage(xmppclient)
