@@ -273,55 +273,11 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
                     if pres['status']:
                         print('       %s' % pres['status'])
 
-    #Check for a user
     def checkUser(self, jid):
-        print('-------Looking for a specific contact -------')
-        print('The information of ' + jid)
+        '''Chech info from a connected user'''
+        print('-------Retrieving info from an specific contact -------')
+        print('Info from: ' + jid)
         print(self.client_roster.presence(jid))
         print('---------------------------------------------\n')
 
 #! Contacts and users area ------------------------------------------------------------------------
-
-    
-
-
-'''
-if __name__ == '__main__':
-    # Setup the command line arguments.
-    optp = OptionParser()
-    # Output verbosity options.
-    optp.add_option('-q', '--quiet', help='set logging to ERROR',
-                    action='store_const', dest='loglevel',
-                    const=logging.ERROR, default=logging.INFO)
-    optp.add_option('-d', '--debug', help='set logging to DEBUG',
-                    action='store_const', dest='loglevel',
-                    const=logging.DEBUG, default=logging.INFO)
-    optp.add_option('-v', '--verbose', help='set logging to COMM',
-                    action='store_const', dest='loglevel',
-                    const=5, default=logging.INFO)
-    # JID and password options.
-    optp.add_option("-j", "--jid", dest="jid",
-                    help="JID to use")
-    optp.add_option("-p", "--password", dest="password",
-                    help="password to use")
-    optp.add_option("-t", "--to", dest="to",
-                    help="JID to send the message to")
-    optp.add_option("-m", "--message", dest="message",
-                    help="message to send")
-    opts, args = optp.parse_args()
-    # Setup logging.
-    logging.basicConfig(level=opts.loglevel,
-                        format='%(levelname)-8s %(message)s')
-    if opts.jid is None:
-        opts.jid = raw_input("Username: ")
-    if opts.password is None:
-        opts.password = getpass.getpass("Password: ")
-    if opts.to is None:
-        opts.to = raw_input("Send To: ")
-    if opts.message is None:
-        opts.message = raw_input("Message: ")
-    # Setup the XMPP_Client and register plugins. Note that while plugins may
-    # have interdependencies, the order in which you register them does
-    # not matter.
-    #xmpp = XMPP_Client(opts.jid, opts.password)
-'''

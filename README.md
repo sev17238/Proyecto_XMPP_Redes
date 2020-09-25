@@ -23,15 +23,23 @@ This project features the following tools:
 ## Installation
 1. Clone this repo using `https://github.com/sev17238/Proyecto_XMPP_Redes.git`
 2. Move to the appropriate directory: `cd Proyecto_XMPP_Redes`.<br />
-3. Run `main_xmpp.py` file. <br />
+3. Run `python main_xmpp.py` file. <br />
 
 ## How to use it
-Choose the desire option of the displayed menu on the console
+Choose the desired option from the console menu and enter what is required:
+
 1. Register
-2. Login
-3. Logout
+2. Log In
+3. Log Out
 4. Delete Account
-5. Send Private Message
+5. Show Connected users
+6. Add user to contacts 
+7. Show Contacts and Status
+8. Show Info from an specific user
+9. Send private message
+10. Join chat room
+11. Send messages to room
+12. Exit
 
 ## References
  - https://sleekxmpp.readthedocs.io/en/latest/
