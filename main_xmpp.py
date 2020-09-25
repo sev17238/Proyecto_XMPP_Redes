@@ -53,6 +53,9 @@ def Login():
 def Logout(xclient):
    xclient.connection_logout()
 
+def deleteAccount(xclient):
+    xclient.deleteAccount()
+
 def sendPrivateMessage(xclient):
     recipient = input("Enter the JID of the person you want to message: ")
     message = input("Enter your message: ")
@@ -72,6 +75,10 @@ def sendRoomMessage(xclient,room):
 def addUser(xclient):
     user = input("Enter the user you want to add to your contacts: ")
     xclient.addUser(user)
+
+def usersList(xclient):
+    xclient.alert()
+    xclient.serverResponseList()
 
 def _exit(xclient):
     xclient.exit()
@@ -97,9 +104,6 @@ def menu():
     print("  9. Send private message")
     print(" 10. Join chat room")
     print(" 11. Send messages to room")
-    print(" . Notify Presence")
-    print(" . Send/Recieve Notifications")
-    print(" . Send/Recieve Files")
     print(" 12. Exit")
     print("__________________________________________________________________")
 
@@ -120,11 +124,11 @@ def menu():
         menu()
     elif choice == 4:
         print(" ")
-        xmppclient.deleteAccount()
+        deleteAccount(xmppclient)
         menu()
     elif choice == 5:
         print(" ")
-        xmppclient.alert()
+        usersList(xmppclient)
         menu()
     elif choice == 6:
         print(" ")

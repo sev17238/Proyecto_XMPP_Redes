@@ -65,18 +65,19 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         self.connected = True
         self.auto_authorize = True 
         self.auto_subscribe = True 
-        self.jabberid = jid
 
         #self.room = None
 
         self.add_event_handler('session_start', self.session_start)
         self.add_event_handler("message", self.receive_messages)
+        self.add_event_handler("groupchat_message", self.sendRoomMessage)
         #self.add_event_handler("changed_subscription", self.getRosterFor)
+        
         self.add_event_handler("got_offline",self.offline_notification)
+        self.add_event_handler("got_online",self.online_notification)
 
         self.presences_received = threading.Event()
-        #self.add_event_handler("got_online",self.online_notification)
-
+        
         self.received_list = set()
         self.contacts = []
         self.users_list = {}
@@ -90,6 +91,7 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         self.register_plugin('xep_0077') # In-band Registration
         self.register_plugin('xep_0096') # Jabber search
         self.register_plugin('xep_0199') # XMPP Ping
+        self.register_plugin('xep_0045') # Multi-User Chat
 
         '''self.plugin['xep_0045'].joinMUC(self.room,
                                         self.nick,
@@ -126,11 +128,11 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
     def deleteAccount(self):
         stanzaReq = self.Iq()
         stanzaReq['type'] = 'set'
-        stanzaReq['from'] = self.jabberid
+        stanzaReq['from'] = self.username
         stanzaReq['register']['remove'] = True
         try:
             stanzaReq.send(now=True)
-            print("Account "+str(self.jabberid)+" deleted!")
+            print("Account "+str(self.username)+" deleted!")
         except IqError as e:
             logging.error("Could not delete account")
             sys.exit(1)
@@ -148,8 +150,9 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
                           mtype='chat')
 
     def receive_messages(self, msg):
-        print("")
+        print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
         print(""+str(msg['from'].user)+"@"+str(msg['from'].domain)+": "+str(msg['body']))
+        print("___________________________________")
 
     def sendRoomMessage(self, room, msg):
         self.send_message(mto=room,mbody=msg,mtype='groupchat')
@@ -160,21 +163,22 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
         self.get_roster()
         self.send_presence()
         self.plugin['xep_0045'].joinMUC(room,
-                                        self.jid,
+                                        self.username,
                                         # If a room password is needed, use:
                                         # password=the_room_password,
                                         wait=True)
 
+
     #! Notifications AREA --------------------------------------------------------------------------------------
     def online_notification(self,event):
-            #msg = self.sendMessage()
-        #print(f"Offline Notification from {event["form"].user}")
-        pass
+        print("+ + + +")
+        print("Online Notification from"+ str(event["form"].user))
+        print("+ + + +")
 
     def offline_notification(self,event):
-        print("")
+        print("- - - -")
         print("Offline Notification from"+ str(event["form"].user))
-        print("")
+        print("- - - -")
 
     def sendNotification(self,to,body,ntype):
         msg = self.Message()
@@ -192,14 +196,18 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
             sys.exit(1)
         except IqTimeout:
             raise Exception("Server Not Responding")
-
-
     #! Notifications AREA --------------------------------------------------------------------------------------
+
 
     #! Contacts and users area ------------------------------------------------------------------------
     def addUser(self,user):
+        '''Add user to contacts'''
         try:
             self.send_presence_subscription(pto=user)
+            msg = user +' subscribed to your updates.'
+            self.send_message(mto=user,
+                          mbody=msg,
+                          mtype='chat')
             print(" "+user+" added to your contacts !")
             return 1
         except IqError:
@@ -210,6 +218,44 @@ class XMPP_Client(sleekxmpp.ClientXMPP):
     def alert(self):
         self.get_roster()
         print(self.get_roster)
+
+    def serverResponseList(self):
+        '''Check for users in the server'''
+        resp = self.Iq()
+        resp['type'] = 'set'
+        resp['to'] = 'search.redes2020.xyz'
+        resp['id'] = 'unreg1'
+        query = '''<query xmlns='jabber:iq:search'> \
+                                <x xmlns='jabber:x:data' type='submit'> \
+                                    <field type='hidden' var='FORM_TYPE'> \
+                                        <value>jabber:iq:search</value> \
+                                    </field> \
+                                    <field var='Username'> \
+                                        <value>1</value> \
+                                    </field> \
+                                    <field var='search'> \
+                                        <value>*</value> \
+                                    </field> \
+                                </x> \
+                              </query>
+        '''
+        resp.append(TreeX.fromstring(query))
+        try:
+            res = resp.send(now=True)
+            print('Users list:')
+            for user in res.findall('.//{jabber:x:data}value'):
+                print(user.text)
+        except IqError as e:
+            raise Exception("Error: %s" % e.iq['error']['text'])
+        except IqTimeout:
+            raise Exception("No response from server.")
+    
+    #Check for a user
+    def checkUser(self, jid):
+        print('-------Looking for a specific contact -------')
+        print('The information of ' + jid)
+        print(self.client_roster.presence(jid))
+        print('---------------------------------------------\n')
 
     #! Contacts and users area ------------------------------------------------------------------------
 
